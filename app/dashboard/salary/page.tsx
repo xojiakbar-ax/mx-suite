@@ -126,95 +126,150 @@ export default function SalaryPage() {
       {/* EMPLOYEES */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
 
-        {employees[0] && (
-          <div className="grid lg:grid-cols-2 gap-6">
+        {employees.map(emp => {
+          if (emp.role === 'director') return null
 
-            {/* LEFT — BIG SALARY */}
-            <div className="bg-white rounded-3xl p-10 shadow-sm border flex flex-col justify-between">
+          const local = editData[emp.id] || {}
+          const merged = { ...emp, ...local }
+          const salary = calculate(merged)
+          const empPenalties = allPenalties.filter(
+            p => p.employee_id === emp.id
+          )
+          return (
+            <div
+              key={emp.id}
+              className="relative bg-white border border-gray-200 rounded-3xl 
+             p-8 shadow-sm hover:shadow-xl 
+             transition-all duration-300 
+             w-full col-span-full flex flex-col gap-8"
+            >
 
-              <div>
-                <p className="text-gray-400 text-sm">
-                  {employees[0].name} — {employees[0].role}
-                </p>
+              {/* subtle glow */}
+              <div className="absolute inset-0 rounded-3xl pointer-events-none opacity-0 hover:opacity-100 transition duration-500 shadow-[0_0_60px_rgba(0,0,0,0.05)]" />
 
-                {/* 🔥 BIG MONEY */}
-                <div className="mt-4 text-6xl font-bold text-gray-900 tracking-tight">
-                  {format(calculate(employees[0]))}
-                </div>
+              {/* HEADER */}
+              <div className="flex justify-between items-center">
 
-                {/* subtitle */}
-                <p className="text-gray-400 mt-2">
-                  Sizning joriy oyligingiz
-                </p>
-              </div>
-
-              {/* stats */}
-              <div className="grid grid-cols-2 gap-4 mt-10">
-
-                <div className="bg-green-50 p-5 rounded-2xl border">
-                  <p className="text-sm text-gray-500">Bonus</p>
-                  <p className="text-2xl font-semibold text-green-600">
-                    +{format(employees[0].bonuses)}
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
+                    {emp.name}
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    {emp.role}
                   </p>
                 </div>
 
-                <div className="bg-blue-50 p-5 rounded-2xl border">
-                  <p className="text-sm text-gray-500">Students</p>
-                  <p className="text-2xl font-semibold text-blue-600">
-                    {employees[0].student_count}
+                <div className="bg-gray-100 px-4 py-1.5 rounded-xl text-sm font-medium">
+                  {emp.student_count || 0} students
+                </div>
+
+              </div>
+
+              {/* BIG SALARY */}
+              <div className="flex items-end justify-between">
+
+                <h1 className="text-6xl font-bold text-gray-900 tracking-tight leading-none">
+                  {format(salary)}
+                </h1>
+
+                <div className="text-sm text-gray-400">
+                  Oylik
+                </div>
+
+              </div>
+
+              {/* STATS */}
+              <div className="grid grid-cols-3 gap-5">
+
+                {/* BONUS */}
+                <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-green-50 transition">
+                  <p className="text-xs text-gray-500 mb-1">Bonus</p>
+                  <p className="text-xl font-semibold text-green-600">
+                    +{format(emp.bonuses)}
+                  </p>
+                </div>
+
+                {/* PENALTY */}
+                <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-red-50 transition">
+                  <p className="text-xs text-gray-500 mb-1">Jarima</p>
+                  <p className="text-xl font-semibold text-red-500">
+                    -{format(emp.penalties)}
+                  </p>
+                </div>
+
+                {/* STUDENTS */}
+                <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-blue-50 transition">
+                  <p className="text-xs text-gray-500 mb-1">Students</p>
+                  <p className="text-xl font-semibold text-blue-600">
+                    {emp.student_count}
                   </p>
                 </div>
 
               </div>
 
-            </div>
+              {/* PENALTY HISTORY */}
+              <div className="border-t pt-6 space-y-4">
 
-            {/* RIGHT — PENALTY PANEL */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Jarimalar tarixi
+                </h3>
 
-              <h3 className="font-semibold mb-4 text-gray-800">
-                Jarimalar tarixi
-              </h3>
+                {allPenalties.filter(p => p.employee_id === emp.id).length === 0 && (
+                  <p className="text-sm text-gray-400">
+                    Jarima yo‘q
+                  </p>
+                )}
 
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                <div className="grid md:grid-cols-2 gap-4">
 
-                {allPenalties
-                  .filter(p => p.employee_id === employees[0].id)
-                  .length === 0 && (
-                    <p className="text-gray-400 text-sm">
-                      Jarima yo‘q 🎉
-                    </p>
-                  )}
+                  {allPenalties
+                    .filter(p => p.employee_id === emp.id)
+                    .map(p => (
+                      <div
+                        key={p.id}
+                        className="flex justify-between items-center 
+                       bg-gray-50 border p-4 rounded-2xl
+                       hover:bg-red-50 transition"
+                      >
+                        <div>
+                          <p className="text-red-500 font-semibold">
+                            -{format(p.amount)}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {p.reason}
+                          </p>
+                        </div>
 
-                {allPenalties
-                  .filter(p => p.employee_id === employees[0].id)
-                  .map(p => (
-                    <div
-                      key={p.id}
-                      className="flex justify-between items-center 
-                         bg-red-50 border border-red-100 
-                         p-4 rounded-2xl"
-                    >
-                      <div>
-                        <p className="text-red-500 font-semibold text-lg">
-                          -{format(p.amount)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {p.reason}
-                        </p>
+                        <div className="text-red-400 text-lg">
+                          ⚠️
+                        </div>
                       </div>
+                    ))}
 
-                      <span className="text-gray-300 text-xl">
-                        ⚠️
-                      </span>
-                    </div>
-                  ))}
+                </div>
+
               </div>
 
-            </div>
+              {/* BUTTONS */}
+              {canEdit && (
+                <div className="flex gap-3 pt-2">
 
-          </div>
-        )}
+                  <button className="flex-1 bg-red-500 hover:bg-red-600 active:scale-95 
+                         transition text-white py-3 rounded-2xl font-medium shadow-sm">
+                    ⚠️ Jarima qo‘shish
+                  </button>
+
+                  <button className="flex-1 bg-gray-900 hover:bg-black active:scale-95 
+                         transition text-white py-3 rounded-2xl font-medium shadow-sm">
+                    💾 Saqlash
+                  </button>
+
+                </div>
+              )}
+
+            </div>
+          )
+        })}
         {showAdd && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
