@@ -25,12 +25,12 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
 
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [isCameraReady, setIsCameraReady] = useState(false)
-  const [caption, setCaption] = useState(
-    new Date().toLocaleTimeString('uz-UZ', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  )
+  const getTime = () => {
+    const now = new Date()
+    return now.toISOString().slice(11, 16) // 🔥 ENG TO‘G‘RI
+  }
+
+  const [caption, setCaption] = useState(getTime())
   // 🎥 CAMERA START
   useEffect(() => {
     if (!isOpen) return
@@ -56,12 +56,8 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
     }
     useEffect(() => {
       if (isOpen) {
-        setCaption(
-          new Date().toLocaleTimeString('uz-UZ', {
-            hour: '2-digit',
-            minute: '2-digit'
-          })
-        )
+        setCaption(new Date().toISOString().slice(11, 16))
+
       }
     }, [isOpen])
 
