@@ -150,17 +150,57 @@ export default function SalaryPage() {
               {/* HEADER */}
               <div className="flex justify-between items-center">
 
+                {/* LEFT */}
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
-                    {emp.name}
-                  </h2>
+
+                  {canEdit ? (
+                    <input
+                      value={editData[emp.id]?.name ?? emp.name}
+                      onChange={(e) =>
+                        setEditData((prev: any) => ({
+                          ...prev,
+                          [emp.id]: {
+                            ...prev[emp.id],
+                            name: e.target.value
+                          }
+                        }))
+                      }
+                      className="text-xl font-semibold bg-transparent border-b border-gray-200 focus:outline-none focus:border-black"
+                    />
+                  ) : (
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {emp.name}
+                    </h2>
+                  )}
+
                   <p className="text-sm text-gray-400">
                     {emp.role}
                   </p>
+
                 </div>
 
-                <div className="bg-gray-100 px-4 py-1.5 rounded-xl text-sm font-medium">
-                  {emp.student_count || 0} students
+                {/* RIGHT */}
+                <div className="flex items-center gap-2">
+
+                  <div className="bg-gray-100 px-4 py-1.5 rounded-xl text-sm font-medium">
+                    {emp.student_count || 0} students
+                  </div>
+
+                  {/* ❗ FAKAT ADMINLAR UCHUN */}
+                  {canEdit && (
+                    <button
+                      onClick={async () => {
+                        if (!confirm('O‘chirishni xohlaysizmi?')) return
+
+                        await supabase.from('employees').delete().eq('id', emp.id)
+                        load()
+                      }}
+                      className="text-red-500 hover:text-red-700 text-lg"
+                    >
+                      🗑
+                    </button>
+                  )}
+
                 </div>
 
               </div>
@@ -198,11 +238,31 @@ export default function SalaryPage() {
                 </div>
 
                 {/* STUDENTS */}
-                <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-blue-50 transition">
+                <div className="rounded-2xl border bg-gray-50 p-5">
+
                   <p className="text-xs text-gray-500 mb-1">Students</p>
-                  <p className="text-xl font-semibold text-blue-600">
-                    {emp.student_count}
-                  </p>
+
+                  {canEdit ? (
+                    <input
+                      type="number"
+                      value={editData[emp.id]?.student_count ?? emp.student_count ?? ''}
+                      onChange={(e) =>
+                        setEditData((prev: any) => ({
+                          ...prev,
+                          [emp.id]: {
+                            ...prev[emp.id],
+                            student_count: Number(e.target.value)
+                          }
+                        }))
+                      }
+                      className="w-full text-xl font-semibold bg-transparent outline-none"
+                    />
+                  ) : (
+                    <p className="text-xl font-semibold text-blue-600">
+                      {emp.student_count}
+                    </p>
+                  )}
+
                 </div>
 
               </div>
@@ -259,8 +319,28 @@ export default function SalaryPage() {
                     ⚠️ Jarima qo‘shish
                   </button>
 
-                  <button className="flex-1 bg-gray-900 hover:bg-black active:scale-95 
-                         transition text-white py-3 rounded-2xl font-medium shadow-sm">
+                  <button
+                    onClick={async () => {
+                      const data = editData[emp.id]
+                      if (!data) return
+
+                      await supabase
+                        .from('employees')
+                        .update({
+                          name: data.name ?? emp.name
+                        })
+                        .eq('id', emp.id)
+
+                      setEditData((prev: any) => {
+                        const copy = { ...prev }
+                        delete copy[emp.id]
+                        return copy
+                      })
+
+                      load()
+                    }}
+                    className="flex-1 bg-gray-900 hover:bg-black text-white py-3 rounded-2xl"
+                  >
                     💾 Saqlash
                   </button>
 
