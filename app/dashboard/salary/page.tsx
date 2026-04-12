@@ -223,20 +223,80 @@ export default function SalaryPage() {
 
                 {/* BONUS */}
                 {canEdit ? (
-                  <input
-                    type="number"
-                    value={editData[emp.id]?.bonuses ?? emp.bonuses ?? ''}
-                    onChange={(e) =>
-                      setEditData((prev: any) => ({
-                        ...prev,
-                        [emp.id]: {
-                          ...prev[emp.id],
-                          bonuses: Number(e.target.value)
+                  <div className="space-y-2">
+
+                    {/* INPUT */}
+                    <div className="flex items-center gap-2">
+
+                      <span className="text-green-600 font-bold text-lg">+</span>
+
+                      <input
+                        type="number"
+                        min={0}
+                        value={editData[emp.id]?.bonuses ?? emp.bonuses ?? ''}
+                        onChange={(e) => {
+                          const val = Number(e.target.value)
+                          if (val < 0) return
+
+                          setEditData((prev: any) => ({
+                            ...prev,
+                            [emp.id]: {
+                              ...prev[emp.id],
+                              bonuses: val
+                            }
+                          }))
+                        }}
+                        className="w-full text-2xl font-bold text-green-600 bg-transparent outline-none"
+                        placeholder="0"
+                      />
+
+                    </div>
+
+                    {/* QUICK BUTTONS */}
+                    <div className="flex gap-2">
+
+                      {[10000, 50000, 100000].map(amount => (
+                        <button
+                          key={amount}
+                          onClick={() =>
+                            setEditData((prev: any) => {
+                              const current =
+                                prev[emp.id]?.bonuses ?? emp.bonuses ?? 0
+
+                              return {
+                                ...prev,
+                                [emp.id]: {
+                                  ...prev[emp.id],
+                                  bonuses: current + amount
+                                }
+                              }
+                            })
+                          }
+                          className="px-3 py-1 text-xs rounded-xl bg-green-50 hover:bg-green-100 text-green-600"
+                        >
+                          +{amount / 1000}k
+                        </button>
+                      ))}
+
+                      {/* RESET */}
+                      <button
+                        onClick={() =>
+                          setEditData((prev: any) => ({
+                            ...prev,
+                            [emp.id]: {
+                              ...prev[emp.id],
+                              bonuses: 0
+                            }
+                          }))
                         }
-                      }))
-                    }
-                    className="w-full text-xl font-semibold text-green-600 bg-transparent outline-none"
-                  />
+                        className="px-3 py-1 text-xs rounded-xl bg-gray-100 hover:bg-gray-200"
+                      >
+                        reset
+                      </button>
+
+                    </div>
+
+                  </div>
                 ) : (
                   <p className="text-xl font-semibold text-green-600">
                     +{format(emp.bonuses)}
