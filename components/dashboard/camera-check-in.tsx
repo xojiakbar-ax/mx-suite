@@ -35,6 +35,8 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
   useEffect(() => {
     if (!isOpen) return
 
+    if (typeof window === 'undefined' || !navigator.mediaDevices) return
+
     const startCamera = async () => {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -56,11 +58,7 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
     }
 
     startCamera()
-    useEffect(() => {
-      if (isOpen) {
-        setCaption(new Date().toISOString().slice(11, 16))
-      }
-    }, [isOpen])
+
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop())
