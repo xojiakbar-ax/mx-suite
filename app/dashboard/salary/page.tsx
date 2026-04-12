@@ -16,6 +16,7 @@ export default function SalaryPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [selectedEmp, setSelectedEmp] = useState<any>(null)
   const [penaltyModal, setPenaltyModal] = useState(false)
+  const [allPenalties, setAllPenalties] = useState<any[]>([])
   const [penaltyForm, setPenaltyForm] = useState({
     amount: 0,
     reason: ''
@@ -41,17 +42,20 @@ export default function SalaryPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return setLoading(false)
 
-    const { data: me } = await supabase
-      .from('employees')
+    // 🔥 parallel fetch
+    const [meRes, settingsRes] = await Promise.all([
+      supabase.from('employees').select('*').eq('profile_id', user.id).maybeSingle(),
+      supabase.from('settings').select('*').maybeSingle()
+    ])
+    const { data: penaltiesData } = await supabase
+      .from('penalties')
       .select('*')
-      .eq('profile_id', user.id)
-      .maybeSingle()
-
+    const me = meRes.data
+    const set = settingsRes.data
+    setAllPenalties(penaltiesData || [])
     if (!me) return setLoading(false)
 
     setRole(me.role)
-
-    const { data: set } = await supabase.from('settings').select('*').maybeSingle()
     setSettings(set)
 
     let query = supabase.from('employees').select('*')
@@ -61,6 +65,7 @@ export default function SalaryPage() {
     }
 
     const { data } = await query
+
     setEmployees(data || [])
     setLoading(false)
   }
@@ -127,188 +132,126 @@ export default function SalaryPage() {
           const local = editData[emp.id] || {}
           const merged = { ...emp, ...local }
           const salary = calculate(merged)
-
+          const empPenalties = allPenalties.filter(
+            p => p.employee_id === emp.id
+          )
           return (
-            <div key={emp.id} className="bg-white p-5 rounded-2xl shadow space-y-3">
+            <div
+              key={emp.id}
+              className="bg-gradient-to-br from-white to-gray-50 
+             p-6 rounded-3xl shadow-lg border
+             hover:shadow-2xl hover:-translate-y-1 
+             transition-all duration-300 space-y-4"
+            >
 
-              <div>
-                <h2 className="font-semibold text-lg">{emp.name}</h2>
-                <p className="text-gray-400 text-sm">{emp.role}</p>
+              {/* HEADER */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="font-semibold text-lg">{emp.name}</h2>
+                  <p className="text-gray-400 text-sm">{emp.role}</p>
+                </div>
+
+                <div className="bg-blue-50 text-blue-600 text-xs px-3 py-1 rounded-xl">
+                  {emp.student_count || 0} student
+                </div>
               </div>
 
-              {canEdit ? (
-                <>
-                  <input
-                    type="number"
-                    value={merged.student_count === 0 ? '' : merged.student_count ?? ''}
-                    onChange={(e) => {
-                      const val = e.target.value === '' ? '' : Number(e.target.value)
-
-                      setEditData((prev: any) => ({
-                        ...prev,
-                        [emp.id]: {
-                          ...prev[emp.id],
-                          student_count: val
-                        }
-                      }))
-                    }}
-                    className="border p-2 rounded w-full"
-                    placeholder="Students"
-                  />
-
-                  <input
-                    type="number"
-                    value={merged.bonuses === 0 ? '' : merged.bonuses ?? ''}
-                    onChange={(e) => {
-                      const val = e.target.value === '' ? '' : Number(e.target.value)
-
-                      setEditData((prev: any) => ({
-                        ...prev,
-                        [emp.id]: {
-                          ...prev[emp.id],
-                          bonuses: val
-                        }
-                      }))
-                    }}
-                    className="border p-2 rounded w-full"
-                    placeholder="Bonus"
-                  />
-
-
-                  <input
-                    type="text"
-                    value={merged.penalty_reason ?? ''}
-                    onChange={(e) => {
-                      const val = e.target.value
-
-                      setEditData((prev: any) => ({
-                        ...prev,
-                        [emp.id]: {
-                          ...prev[emp.id],
-                          penalty_reason: val
-                        }
-                      }))
-                    }}
-                    className="border p-2 rounded w-full"
-                    placeholder="Jarima sababi"
-                  />
-                </>
-              ) : (
-                <>
-                  <p>Students: {emp.student_count}</p>
-                  <p>Bonus: {format(emp.bonuses)}</p>
-                  <p>Penalty: {format(emp.penalties)}</p>
-
-                  {emp.penalty_reason && (
-                    <p className="text-sm text-red-500">
-                      Sabab: {emp.penalty_reason}
-                    </p>
-                  )}                </>
-              )}
-
-              <div className="text-2xl font-bold text-green-600">
+              {/* SALARY */}
+              <div className="text-3xl font-bold text-green-500 drop-shadow-lg">
                 {format(salary)}
               </div>
 
+              {/* BONUS */}
+              <div className="flex justify-between text-sm bg-green-50 p-2 rounded-xl">
+                <span className="text-gray-500">Bonus</span>
+                <span className="text-green-600 font-semibold">
+                  +{format(emp.bonuses)}
+                </span>
+              </div>
 
-              {/* 🔥 SHU YERGA QO‘Y */}
+              {/* PENALTY HISTORY */}
+              <div className="space-y-1 max-h-[120px] overflow-y-auto">
+                {allPenalties
+                  .filter(p => p.employee_id === emp.id)
+                  .map(p => (
+                    <div
+                      key={p.id}
+                      className="flex justify-between bg-red-50 p-2 rounded-lg text-sm"
+                    >
+                      <span className="text-red-500 font-medium">
+                        -{format(p.amount)}
+                      </span>
+                      <span className="text-gray-400 text-xs">
+                        {p.reason}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+
+              {/* BUTTONS */}
               {canEdit && (
-                <button
-                  onClick={async () => {
-                    setSelectedEmp(emp)
-                    setPenaltyModal(true)
+                <>
+                  <button
+                    onClick={async () => {
+                      setSelectedEmp(emp)
+                      setPenaltyModal(true)
 
-                    const { data } = await supabase
-                      .from('penalties')
-                      .select('*')
-                      .eq('employee_id', emp.id)
-                      .order('created_at', { ascending: false })
+                      const { data } = await supabase
+                        .from('penalties')
+                        .select('*')
+                        .eq('employee_id', emp.id)
+                        .order('created_at', { ascending: false })
 
-                    setHistory(data || [])
-                  }}
-                  className="group flex items-center justify-center gap-2 
-             bg-gradient-to-r from-red-500 to-red-600 
-             hover:from-red-600 hover:to-red-700
-             text-white py-2 rounded-xl w-full 
-             transition-all duration-200 
-             hover:scale-[1.03] active:scale-[0.97] shadow-md hover:shadow-lg"
-                >
-                  <AlertTriangle
-                    size={18}
-                    className="transition-transform duration-200 group-hover:rotate-12"
-                  />
-                  <span>Jarima qo‘shish</span>
-                </button>
-              )}
+                      setHistory(data || [])
+                    }}
+                    className="group flex items-center justify-center gap-2 
+                   bg-gradient-to-r from-red-500 to-red-600 
+                   hover:from-red-600 hover:to-red-700
+                   text-white py-2 rounded-xl w-full 
+                   transition-all duration-200 
+                   hover:scale-[1.03] active:scale-[0.97]"
+                  >
+                    <AlertTriangle size={18} />
+                    Jarima qo‘shish
+                  </button>
 
+                  <button
+                    onClick={async () => {
+                      const data = editData[emp.id]
+                      if (!data) return
 
-              {canEdit && (
-                <button
-                  onClick={async () => {
-                    const data = editData[emp.id]
-                    if (!data) return
+                      setSavingId(emp.id)
 
-                    // 🔥 FAQAT 1 MARTA
-                    const penalty = 0
-                    const reason = data.penalty_reason ?? ''
+                      await supabase
+                        .from('employees')
+                        .update({
+                          student_count: data.student_count ?? emp.student_count,
+                          bonuses: data.bonuses ?? emp.bonuses,
+                          penalty_reason: data.penalty_reason ?? emp.penalty_reason
+                        })
+                        .eq('id', emp.id)
 
-
-                    // ❗ VALIDATION
-                    if (penalty > 0 && (!reason || reason.trim() === '')) {
-                      alert('❗ Jarima sababi yozilishi shart')
-                      return
-                    }
-
-                    setSavingId(emp.id)
-
-                    // ❗ HISTORY
-
-
-                    // ❗ UPDATE (salary kamayadi)
-                    await supabase
-                      .from('employees')
-                      .update({
-                        student_count: data.student_count ?? emp.student_count,
-                        bonuses: data.bonuses ?? emp.bonuses,
-                        penalties: (emp.penalties || 0) + penalty,
-                        penalty_reason: reason
-                      })
-                      .eq('id', emp.id)
-
-                    setEditData((prev: any) => ({
-                      ...prev,
-                      [emp.id]: {
-                        student_count: undefined,
-                        bonuses: undefined,
-                        penalties: 0,
-                        penalty_reason: ''
-                      }
-                    }))
-                    setSavingId(null)
-                    setEmployees(prev =>
-                      prev.map(e =>
-                        e.id === emp.id
-                          ? {
-                            ...e,
-                            student_count: data.student_count ?? e.student_count,
-                            bonuses: data.bonuses ?? e.bonuses,
-                            penalties: (e.penalties || 0) + penalty,
-                            penalty_reason: reason
-                          }
-                          : e
+                      setEmployees(prev =>
+                        prev.map(e =>
+                          e.id === emp.id
+                            ? {
+                              ...e,
+                              student_count: data.student_count ?? e.student_count,
+                              bonuses: data.bonuses ?? e.bonuses,
+                              penalty_reason: data.penalty_reason ?? e.penalty_reason
+                            }
+                            : e
+                        )
                       )
-                    )
-                    setSelectedEmp((prev: any) => ({
-                      ...prev,
-                      penalties: (prev.penalties || 0) + penaltyForm.amount
-                    }))
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl w-full"
-                >
-                  {savingId === emp.id ? 'Saqlanmoqda...' : '💾 Saqlash'}
-                </button>
-              )}
 
+                      setSavingId(null)
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl w-full"
+                  >
+                    {savingId === emp.id ? 'Saqlanmoqda...' : '💾 Saqlash'}
+                  </button>
+                </>
+              )}
             </div>
           )
         })}
