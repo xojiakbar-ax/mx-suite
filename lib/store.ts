@@ -527,7 +527,7 @@ export const useStore = create<AppState>()(
 
         return checkIns.slice(0, limit)
       },
-
+      // test
       restoreCheckInState: async () => {
         const state = get()
         const userId = state.user?.id
