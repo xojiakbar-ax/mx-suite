@@ -219,89 +219,87 @@ export default function SalaryPage() {
               </div>
 
               {/* STATS */}
-              <div className="grid grid-cols-3 gap-5">
+              <div className="grid grid-cols-3 gap-5 items-stretch">
 
                 {/* BONUS */}
-                {canEdit ? (
-                  <div className="space-y-2">
+                <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-green-50 transition flex flex-col justify-between">
 
-                    {/* INPUT */}
-                    <div className="flex items-center gap-2">
+                  <p className="text-xs text-gray-500 mb-3">Bonus</p>
 
-                      <span className="text-green-600 font-bold text-lg">+</span>
+                  {canEdit ? (
+                    <div className="flex flex-col gap-4">
 
-                      <input
-                        type="number"
-                        min={0}
-                        value={editData[emp.id]?.bonuses ?? emp.bonuses ?? ''}
-                        onChange={(e) => {
-                          const val = Number(e.target.value)
-                          if (val < 0) return
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-600 font-bold text-lg">+</span>
 
-                          setEditData((prev: any) => ({
-                            ...prev,
-                            [emp.id]: {
-                              ...prev[emp.id],
-                              bonuses: val
-                            }
-                          }))
-                        }}
-                        className="w-full text-2xl font-bold text-green-600 bg-transparent outline-none"
-                        placeholder="0"
-                      />
+                        <input
+                          type="number"
+                          min={0}
+                          value={editData[emp.id]?.bonuses ?? emp.bonuses ?? ''}
+                          onChange={(e) => {
+                            const val = Number(e.target.value)
+                            if (val < 0) return
 
-                    </div>
-
-                    {/* QUICK BUTTONS */}
-                    <div className="flex gap-2">
-
-                      {[10000, 50000, 100000].map(amount => (
-                        <button
-                          key={amount}
-                          onClick={() =>
-                            setEditData((prev: any) => {
-                              const current =
-                                prev[emp.id]?.bonuses ?? emp.bonuses ?? 0
-
-                              return {
-                                ...prev,
-                                [emp.id]: {
-                                  ...prev[emp.id],
-                                  bonuses: current + amount
-                                }
+                            setEditData((prev: any) => ({
+                              ...prev,
+                              [emp.id]: {
+                                ...prev[emp.id],
+                                bonuses: val
                               }
-                            })
-                          }
-                          className="px-3 py-1 text-xs rounded-xl bg-green-50 hover:bg-green-100 text-green-600"
-                        >
-                          +{amount / 1000}k
-                        </button>
-                      ))}
+                            }))
+                          }}
+                          className="w-full text-2xl font-bold text-green-600 bg-transparent outline-none"
+                        />
+                      </div>
 
-                      {/* RESET */}
-                      <button
-                        onClick={() =>
-                          setEditData((prev: any) => ({
-                            ...prev,
-                            [emp.id]: {
-                              ...prev[emp.id],
-                              bonuses: 0
+                      <div className="flex gap-2 flex-wrap">
+                        {[10000, 50000, 100000].map(amount => (
+                          <button
+                            key={amount}
+                            onClick={() =>
+                              setEditData((prev: any) => {
+                                const current =
+                                  prev[emp.id]?.bonuses ?? emp.bonuses ?? 0
+
+                                return {
+                                  ...prev,
+                                  [emp.id]: {
+                                    ...prev[emp.id],
+                                    bonuses: current + amount
+                                  }
+                                }
+                              })
                             }
-                          }))
-                        }
-                        className="px-3 py-1 text-xs rounded-xl bg-gray-100 hover:bg-gray-200"
-                      >
-                        reset
-                      </button>
+                            className="px-3 py-1 text-xs rounded-xl bg-green-100 hover:bg-green-200 text-green-700"
+                          >
+                            +{amount / 1000}k
+                          </button>
+                        ))}
+
+                        <button
+                          onClick={() =>
+                            setEditData((prev: any) => ({
+                              ...prev,
+                              [emp.id]: {
+                                ...prev[emp.id],
+                                bonuses: 0
+                              }
+                            }))
+                          }
+                          className="px-3 py-1 text-xs rounded-xl bg-gray-200 hover:bg-gray-300"
+                        >
+                          reset
+                        </button>
+                      </div>
 
                     </div>
+                  ) : (
+                    <p className="text-xl font-semibold text-green-600">
+                      +{format(emp.bonuses)}
+                    </p>
+                  )}
 
-                  </div>
-                ) : (
-                  <p className="text-xl font-semibold text-green-600">
-                    +{format(emp.bonuses)}
-                  </p>
-                )}
+                </div>
 
                 {/* PENALTY */}
                 <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-red-50 transition">
@@ -319,6 +317,7 @@ export default function SalaryPage() {
                   {canEdit ? (
                     <input
                       type="number"
+                      min={0}
                       value={editData[emp.id]?.student_count ?? emp.student_count ?? ''}
                       onChange={(e) =>
                         setEditData((prev: any) => ({
