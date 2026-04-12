@@ -138,51 +138,63 @@ export default function SalaryPage() {
           return (
             <div
               key={emp.id}
-              className="relative overflow-hidden 
-             bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617]
-             text-white p-6 rounded-3xl shadow-2xl 
-             border border-white/10
-             hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]
-             transition-all duration-300 space-y-5"
+              className="bg-white border border-gray-200 
+             rounded-3xl p-6 shadow-sm 
+             hover:shadow-md transition-all duration-300 
+             flex flex-col gap-5"
             >
 
-              {/* glow */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full" />
+              {/* TOP */}
+              <div className="flex justify-between items-start">
 
-              {/* HEADER */}
-              <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-lg font-semibold tracking-wide">
+                  <h2 className="text-lg font-semibold text-gray-800">
                     {emp.name}
                   </h2>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-gray-400">
                     {emp.role}
                   </p>
                 </div>
 
-                <div className="bg-white/10 px-3 py-1 rounded-xl text-xs">
+                <div className="text-xs bg-gray-100 px-3 py-1 rounded-full">
                   {emp.student_count || 0} student
                 </div>
+
               </div>
 
-              {/* SALARY */}
-              <div className="text-4xl font-extrabold text-emerald-400 tracking-tight drop-shadow-lg">
+              {/* BIG SALARY */}
+              <div className="text-4xl font-bold text-gray-900 tracking-tight">
                 {format(salary)}
               </div>
 
-              {/* BONUS */}
-              <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl">
-                <span className="text-gray-400 text-sm">Bonus</span>
-                <span className="text-emerald-400 font-semibold">
-                  +{format(emp.bonuses)}
-                </span>
+              {/* 2 COLUMN */}
+              <div className="grid grid-cols-2 gap-4">
+
+                {/* BONUS */}
+                <div className="bg-green-50 border border-green-100 p-4 rounded-2xl">
+                  <p className="text-xs text-gray-500 mb-1">Bonus</p>
+                  <p className="text-lg font-semibold text-green-600">
+                    +{format(emp.bonuses)}
+                  </p>
+                </div>
+
+                {/* PENALTY TOTAL */}
+                <div className="bg-red-50 border border-red-100 p-4 rounded-2xl">
+                  <p className="text-xs text-gray-500 mb-1">Jarima</p>
+                  <p className="text-lg font-semibold text-red-500">
+                    -{format(emp.penalties)}
+                  </p>
+                </div>
+
               </div>
 
-              {/* PENALTY */}
-              <div className="space-y-2 max-h-[120px] overflow-y-auto">
+              {/* PENALTY LIST */}
+              <div className="border-t pt-3 space-y-2 max-h-[140px] overflow-y-auto">
 
                 {allPenalties.filter(p => p.employee_id === emp.id).length === 0 && (
-                  <p className="text-gray-500 text-sm">Jarima yo‘q 🎉</p>
+                  <p className="text-sm text-gray-400">
+                    Jarima yo‘q
+                  </p>
                 )}
 
                 {allPenalties
@@ -190,9 +202,9 @@ export default function SalaryPage() {
                   .map(p => (
                     <div
                       key={p.id}
-                      className="flex justify-between bg-red-500/10 p-2 rounded-lg text-sm"
+                      className="flex justify-between items-center text-sm"
                     >
-                      <span className="text-red-400">
+                      <span className="text-red-500 font-medium">
                         -{format(p.amount)}
                       </span>
                       <span className="text-gray-400 text-xs">
@@ -202,18 +214,21 @@ export default function SalaryPage() {
                   ))}
               </div>
 
-              {/* BUTTONS (o‘zgarma) */}
+              {/* BUTTONS */}
               {canEdit && (
-                <>
-                  <button className="bg-red-600 hover:bg-red-700 py-2 rounded-xl w-full">
-                    ⚠️ Jarima qo‘shish
+                <div className="flex gap-2">
+
+                  <button className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-sm">
+                    Jarima qo‘shish
                   </button>
 
-                  <button className="bg-emerald-600 hover:bg-emerald-700 py-2 rounded-xl w-full">
-                    💾 Saqlash
+                  <button className="flex-1 bg-gray-900 hover:bg-black text-white py-2 rounded-xl text-sm">
+                    Saqlash
                   </button>
-                </>
+
+                </div>
               )}
+
             </div>
           )
         })}
