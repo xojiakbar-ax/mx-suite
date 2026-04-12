@@ -439,8 +439,8 @@ export const useStore = create<AppState>()(
           const checkInRecord = {
             userId: state.user?.id || '',
             userName: state.user?.name || '',
-            date: data.check_in_date,
-            checkInTime: data.check_in_time,
+            date: data.date,
+            checkInTime: data.checkInTime,
             checkOutTime: null,
             isLate: data.is_late,
             penalty: 0,
@@ -554,7 +554,7 @@ export const useStore = create<AppState>()(
               userName: state.user?.name || '', // 🔥 SHU MUHIM
               date: todayCheck.date,
               checkInTime: todayCheck.checkInTime,
-              checkOutTime: todayCheck.check_out_time,
+              checkOutTime: todayCheck.checkOutTime,
               isLate: todayCheck.isLate,
               penalty: todayCheck.penalty,
               checkInImage: todayCheck.check_in_image,
