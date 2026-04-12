@@ -54,15 +54,13 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
         alert('❌ Kamera uchun ruxsat berilmagan')
       }
     }
+
+    startCamera()
     useEffect(() => {
       if (isOpen) {
         setCaption(new Date().toISOString().slice(11, 16))
-
       }
     }, [isOpen])
-
-    startCamera()
-
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop())
@@ -145,7 +143,7 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
   const resetAndClose = () => {
     setCapturedImage(null)
     setIsCameraReady(false)
-    setCaption('')
+    setCaption(new Date().toISOString().slice(11, 16))
     onClose()
   }
 
