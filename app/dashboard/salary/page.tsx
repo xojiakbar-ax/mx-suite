@@ -126,112 +126,95 @@ export default function SalaryPage() {
       {/* EMPLOYEES */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
 
-        {employees.map(emp => {
-          if (emp.role === 'director') return null
+        {employees[0] && (
+          <div className="grid lg:grid-cols-2 gap-6">
 
-          const local = editData[emp.id] || {}
-          const merged = { ...emp, ...local }
-          const salary = calculate(merged)
-          const empPenalties = allPenalties.filter(
-            p => p.employee_id === emp.id
-          )
-          return (
-            <div
-              key={emp.id}
-              className="bg-white border border-gray-200 
-             rounded-3xl p-6 shadow-sm 
-             hover:shadow-md transition-all duration-300 
-             flex flex-col gap-5"
-            >
+            {/* LEFT — BIG SALARY */}
+            <div className="bg-white rounded-3xl p-10 shadow-sm border flex flex-col justify-between">
 
-              {/* TOP */}
-              <div className="flex justify-between items-start">
+              <div>
+                <p className="text-gray-400 text-sm">
+                  {employees[0].name} — {employees[0].role}
+                </p>
 
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {emp.name}
-                  </h2>
-                  <p className="text-sm text-gray-400">
-                    {emp.role}
+                {/* 🔥 BIG MONEY */}
+                <div className="mt-4 text-6xl font-bold text-gray-900 tracking-tight">
+                  {format(calculate(employees[0]))}
+                </div>
+
+                {/* subtitle */}
+                <p className="text-gray-400 mt-2">
+                  Sizning joriy oyligingiz
+                </p>
+              </div>
+
+              {/* stats */}
+              <div className="grid grid-cols-2 gap-4 mt-10">
+
+                <div className="bg-green-50 p-5 rounded-2xl border">
+                  <p className="text-sm text-gray-500">Bonus</p>
+                  <p className="text-2xl font-semibold text-green-600">
+                    +{format(employees[0].bonuses)}
                   </p>
                 </div>
 
-                <div className="text-xs bg-gray-100 px-3 py-1 rounded-full">
-                  {emp.student_count || 0} student
-                </div>
-
-              </div>
-
-              {/* BIG SALARY */}
-              <div className="text-4xl font-bold text-gray-900 tracking-tight">
-                {format(salary)}
-              </div>
-
-              {/* 2 COLUMN */}
-              <div className="grid grid-cols-2 gap-4">
-
-                {/* BONUS */}
-                <div className="bg-green-50 border border-green-100 p-4 rounded-2xl">
-                  <p className="text-xs text-gray-500 mb-1">Bonus</p>
-                  <p className="text-lg font-semibold text-green-600">
-                    +{format(emp.bonuses)}
-                  </p>
-                </div>
-
-                {/* PENALTY TOTAL */}
-                <div className="bg-red-50 border border-red-100 p-4 rounded-2xl">
-                  <p className="text-xs text-gray-500 mb-1">Jarima</p>
-                  <p className="text-lg font-semibold text-red-500">
-                    -{format(emp.penalties)}
+                <div className="bg-blue-50 p-5 rounded-2xl border">
+                  <p className="text-sm text-gray-500">Students</p>
+                  <p className="text-2xl font-semibold text-blue-600">
+                    {employees[0].student_count}
                   </p>
                 </div>
 
               </div>
 
-              {/* PENALTY LIST */}
-              <div className="border-t pt-3 space-y-2 max-h-[140px] overflow-y-auto">
+            </div>
 
-                {allPenalties.filter(p => p.employee_id === emp.id).length === 0 && (
-                  <p className="text-sm text-gray-400">
-                    Jarima yo‘q
-                  </p>
-                )}
+            {/* RIGHT — PENALTY PANEL */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border">
+
+              <h3 className="font-semibold mb-4 text-gray-800">
+                Jarimalar tarixi
+              </h3>
+
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
 
                 {allPenalties
-                  .filter(p => p.employee_id === emp.id)
+                  .filter(p => p.employee_id === employees[0].id)
+                  .length === 0 && (
+                    <p className="text-gray-400 text-sm">
+                      Jarima yo‘q 🎉
+                    </p>
+                  )}
+
+                {allPenalties
+                  .filter(p => p.employee_id === employees[0].id)
                   .map(p => (
                     <div
                       key={p.id}
-                      className="flex justify-between items-center text-sm"
+                      className="flex justify-between items-center 
+                         bg-red-50 border border-red-100 
+                         p-4 rounded-2xl"
                     >
-                      <span className="text-red-500 font-medium">
-                        -{format(p.amount)}
-                      </span>
-                      <span className="text-gray-400 text-xs">
-                        {p.reason}
+                      <div>
+                        <p className="text-red-500 font-semibold text-lg">
+                          -{format(p.amount)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {p.reason}
+                        </p>
+                      </div>
+
+                      <span className="text-gray-300 text-xl">
+                        ⚠️
                       </span>
                     </div>
                   ))}
               </div>
 
-              {/* BUTTONS */}
-              {canEdit && (
-                <div className="flex gap-2">
-
-                  <button className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-sm">
-                    Jarima qo‘shish
-                  </button>
-
-                  <button className="flex-1 bg-gray-900 hover:bg-black text-white py-2 rounded-xl text-sm">
-                    Saqlash
-                  </button>
-
-                </div>
-              )}
-
             </div>
-          )
-        })}
+
+          </div>
+        )}
         {showAdd && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
