@@ -138,47 +138,61 @@ export default function SalaryPage() {
           return (
             <div
               key={emp.id}
-              className="bg-gradient-to-br from-white to-gray-50 
-             p-6 rounded-3xl shadow-lg border
-             hover:shadow-2xl hover:-translate-y-1 
-             transition-all duration-300 space-y-4"
+              className="relative overflow-hidden 
+             bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617]
+             text-white p-6 rounded-3xl shadow-2xl 
+             border border-white/10
+             hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]
+             transition-all duration-300 space-y-5"
             >
+
+              {/* glow */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full" />
 
               {/* HEADER */}
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="font-semibold text-lg">{emp.name}</h2>
-                  <p className="text-gray-400 text-sm">{emp.role}</p>
+                  <h2 className="text-lg font-semibold tracking-wide">
+                    {emp.name}
+                  </h2>
+                  <p className="text-xs text-gray-400">
+                    {emp.role}
+                  </p>
                 </div>
 
-                <div className="bg-blue-50 text-blue-600 text-xs px-3 py-1 rounded-xl">
+                <div className="bg-white/10 px-3 py-1 rounded-xl text-xs">
                   {emp.student_count || 0} student
                 </div>
               </div>
 
               {/* SALARY */}
-              <div className="text-3xl font-bold text-green-500 drop-shadow-lg">
+              <div className="text-4xl font-extrabold text-emerald-400 tracking-tight drop-shadow-lg">
                 {format(salary)}
               </div>
 
               {/* BONUS */}
-              <div className="flex justify-between text-sm bg-green-50 p-2 rounded-xl">
-                <span className="text-gray-500">Bonus</span>
-                <span className="text-green-600 font-semibold">
+              <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl">
+                <span className="text-gray-400 text-sm">Bonus</span>
+                <span className="text-emerald-400 font-semibold">
                   +{format(emp.bonuses)}
                 </span>
               </div>
 
-              {/* PENALTY HISTORY */}
-              <div className="space-y-1 max-h-[120px] overflow-y-auto">
+              {/* PENALTY */}
+              <div className="space-y-2 max-h-[120px] overflow-y-auto">
+
+                {allPenalties.filter(p => p.employee_id === emp.id).length === 0 && (
+                  <p className="text-gray-500 text-sm">Jarima yo‘q 🎉</p>
+                )}
+
                 {allPenalties
                   .filter(p => p.employee_id === emp.id)
                   .map(p => (
                     <div
                       key={p.id}
-                      className="flex justify-between bg-red-50 p-2 rounded-lg text-sm"
+                      className="flex justify-between bg-red-500/10 p-2 rounded-lg text-sm"
                     >
-                      <span className="text-red-500 font-medium">
+                      <span className="text-red-400">
                         -{format(p.amount)}
                       </span>
                       <span className="text-gray-400 text-xs">
@@ -188,67 +202,15 @@ export default function SalaryPage() {
                   ))}
               </div>
 
-              {/* BUTTONS */}
+              {/* BUTTONS (o‘zgarma) */}
               {canEdit && (
                 <>
-                  <button
-                    onClick={async () => {
-                      setSelectedEmp(emp)
-                      setPenaltyModal(true)
-
-                      const { data } = await supabase
-                        .from('penalties')
-                        .select('*')
-                        .eq('employee_id', emp.id)
-                        .order('created_at', { ascending: false })
-
-                      setHistory(data || [])
-                    }}
-                    className="group flex items-center justify-center gap-2 
-                   bg-gradient-to-r from-red-500 to-red-600 
-                   hover:from-red-600 hover:to-red-700
-                   text-white py-2 rounded-xl w-full 
-                   transition-all duration-200 
-                   hover:scale-[1.03] active:scale-[0.97]"
-                  >
-                    <AlertTriangle size={18} />
-                    Jarima qo‘shish
+                  <button className="bg-red-600 hover:bg-red-700 py-2 rounded-xl w-full">
+                    ⚠️ Jarima qo‘shish
                   </button>
 
-                  <button
-                    onClick={async () => {
-                      const data = editData[emp.id]
-                      if (!data) return
-
-                      setSavingId(emp.id)
-
-                      await supabase
-                        .from('employees')
-                        .update({
-                          student_count: data.student_count ?? emp.student_count,
-                          bonuses: data.bonuses ?? emp.bonuses,
-                          penalty_reason: data.penalty_reason ?? emp.penalty_reason
-                        })
-                        .eq('id', emp.id)
-
-                      setEmployees(prev =>
-                        prev.map(e =>
-                          e.id === emp.id
-                            ? {
-                              ...e,
-                              student_count: data.student_count ?? e.student_count,
-                              bonuses: data.bonuses ?? e.bonuses,
-                              penalty_reason: data.penalty_reason ?? e.penalty_reason
-                            }
-                            : e
-                        )
-                      )
-
-                      setSavingId(null)
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl w-full"
-                  >
-                    {savingId === emp.id ? 'Saqlanmoqda...' : '💾 Saqlash'}
+                  <button className="bg-emerald-600 hover:bg-emerald-700 py-2 rounded-xl w-full">
+                    💾 Saqlash
                   </button>
                 </>
               )}
