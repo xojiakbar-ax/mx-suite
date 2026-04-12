@@ -446,6 +446,7 @@ export const useStore = create<AppState>()(
             penalty: 0,
             checkInImage: data.check_in_image || image || '',
             caption: data.caption || caption || '',
+
           }
 
           const id = Date.now().toString()
@@ -550,6 +551,7 @@ export const useStore = create<AppState>()(
           if (todayCheck) {
             const checkInRecord = {
               userId: userId,
+              userName: state.user?.name || '', // 🔥 SHU MUHIM
               date: todayCheck.date,
               checkInTime: todayCheck.checkInTime,
               checkOutTime: todayCheck.check_out_time,
@@ -575,7 +577,7 @@ export const useStore = create<AppState>()(
         } catch (err) {
           console.error("RESTORE ERROR:", err)
         }
-      }
+      },
 
       // Tasks
       tasks: [],
