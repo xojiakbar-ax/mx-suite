@@ -527,102 +527,55 @@ export const useStore = create<AppState>()(
         return checkIns.slice(0, limit)
       },
 
-      restoreCheckInState: () => {
-        if (typeof window === 'undefined') return
-
+      restoreCheckInState: async () => {
         const state = get()
         const userId = state.user?.id
 
         if (!userId) return
 
-        const now = new Date()
+        try {
+          const res = await fetch('/api/checkin')
 
-        const today = now.toISOString().split('T')[0]
+          if (!res.ok) return
 
-        const checkInTime = now.toLocaleTimeString('uz-UZ', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })
+          const data = await res.json()
 
-        const isLate = now.getHours() >= 9 && now.getMinutes() > 0
-        const stored = localStorage.getItem(`educenter-checkin-${userId}`)
+          const today = new Date().toISOString().split('T')[0]
 
-        if (!stored) {
-          set({ todayCheckIn: null })
-          return
-        }
-        restoreCheckInState: async () => {
-          if (typeof window === 'undefined') return
+          const todayCheck = data.find(
+            (item: any) =>
+              item.date === today
+          )
 
-          const state = get()
-          const userId = state.user?.id
-
-          if (!userId) return
-
-          try {
-            const res = await fetch('/api/checkin')
-
-            if (!res.ok) return
-
-            const data = await res.json()
-
-            const today = new Date().toISOString().split('T')[0]
-
-            const todayCheck = data.find(
-              (item: any) => item.check_in_date === today
-            )
-
-            if (todayCheck) {
-              const checkInRecord = {
-                userId: todayCheck.user_id,
-                userName: state.user?.name || '',
-                date: todayCheck.check_in_date,
-                checkInTime: todayCheck.check_in_time,
-                checkOutTime: todayCheck.check_out_time,
-                isLate: todayCheck.is_late,
-                penalty: todayCheck.penalty,
-                checkInImage: todayCheck.check_in_image,
-                caption: todayCheck.caption,
-              }
-
-              const id = Date.now().toString()
-
-              set({
-                todayCheckIn: checkInRecord,
-                allCheckIns: {
-                  ...state.allCheckIns,
-                  [id]: checkInRecord
-                }
-              })
-            } else {
-              set({ todayCheckIn: null })
+          if (todayCheck) {
+            const checkInRecord = {
+              userId: userId,
+              date: todayCheck.date,
+              checkInTime: todayCheck.checkInTime,
+              checkOutTime: todayCheck.check_out_time,
+              isLate: todayCheck.isLate,
+              penalty: todayCheck.penalty,
+              checkInImage: todayCheck.check_in_image,
+              caption: todayCheck.caption,
             }
 
-          } catch (err) {
-            console.error("RESTORE ERROR:", err)
-          }
-        }
-        try {
-          const data = JSON.parse(stored)
-
-          if (data.date === today) {
             const id = Date.now().toString()
 
             set({
-              todayCheckIn: data,
+              todayCheckIn: checkInRecord,
               allCheckIns: {
                 ...state.allCheckIns,
-                [id]: data // 🔥 MUHIM
+                [id]: checkInRecord
               }
             })
           } else {
             set({ todayCheckIn: null })
           }
 
-        } catch {
-          set({ todayCheckIn: null })
+        } catch (err) {
+          console.error("RESTORE ERROR:", err)
         }
-      },
+      }
 
       // Tasks
       tasks: [],

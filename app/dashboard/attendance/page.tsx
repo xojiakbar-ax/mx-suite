@@ -119,8 +119,15 @@ export default function AttendancePage() {
 
                                 {/* CAPTION */}
                                 {item.caption && (
-                                    <div className="mt-2 p-3 bg-muted rounded-lg text-sm">
-                                        💬 {item.caption}
+                                    <div className="mt-2 p-3 bg-muted rounded-lg text-sm flex justify-between items-center">
+                                        <span>💬 {item.caption}</span>
+
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date().toLocaleTimeString('uz-UZ', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </span>
                                     </div>
                                 )}
                             </div>

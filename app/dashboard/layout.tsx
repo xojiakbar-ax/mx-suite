@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-
+  const [checkInOpen, setCheckInOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [mounted, setMounted] = useState(false) // 🔥 FIX
@@ -46,7 +46,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     init()
   }, [supabase, router])
-
+  useEffect(() => {
+    if (
+      storeUser &&
+      storeUser.role !== 'director' &&
+      !todayCheckIn
+    ) {
+      setCheckInOpen(true)
+    }
+  }, [storeUser, todayCheckIn])
   // 🔥 hydration fix
   if (!mounted) return null
 
@@ -69,17 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
   // 🔥 FORCE CHECK-IN (SAFE)
-  if (
-    storeUser &&
-    storeUser.role !== 'director' &&
-    !todayCheckIn
-  ) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <CameraCheckIn isOpen={true} onClose={() => { }} />
-      </div>
-    )
-  }
+
 
   // ✅ NORMAL DASHBOARD
   return (
@@ -107,6 +105,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="p-4 lg:p-6">
           <CheckInBanner />
           {children}
+          <CameraCheckIn
+            isOpen={checkInOpen}
+            onClose={() => setCheckInOpen(false)}
+          />
         </main>
       </div>
     </div>
