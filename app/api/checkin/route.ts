@@ -55,12 +55,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { check_in_image, caption } = body
 
+    // 🔥 SERVER TIME (XAVFSIZ)
     const now = new Date()
-    const today = now.toISOString().split('T')[0]
 
-    // 🔒 1 marta
+    // 🔥 TOSHKENT TIME (DISPLAY)
+    const checkInTime = new Intl.DateTimeFormat('uz-UZ', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Tashkent',
+    }).format(now)
+
+    // 🔥 ISO DATE (BUGUN)
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Tashkent',
+    }).format(now)
+
+    // 🔒 1 MARTA CHECK
     const { data: existing } = await supabase
-      .from('check_ins') // ✅ FIX
+      .from('check_ins')
       .select('id')
       .eq('user_id', user.id)
       .eq('check_in_date', today)
@@ -73,17 +86,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const hours = now.getHours()
-    const minutes = now.getMinutes()
-    const is_late = hours > 9 || (hours === 9 && minutes > 0)
-
-    const checkInTime = now.toLocaleTimeString('uz-UZ', {
+    // 🔥 KECHIKISH (TOSHKENT TIME BO‘YICHA)
+    const parts = new Intl.DateTimeFormat('en-GB', {
       hour: '2-digit',
-      minute: '2-digit'
-    })
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Tashkent',
+    }).formatToParts(now)
 
+    const hours = Number(parts.find(p => p.type === 'hour')?.value)
+    const minutes = Number(parts.find(p => p.type === 'minute')?.value)
+
+    const is_late = hours > 8 || (hours === 8 && minutes > 0)
+
+    // 🔥 INSERT
     const { data, error } = await supabase
-      .from('check_ins') // ✅ FIX
+      .from('check_ins')
       .insert({
         user_id: user.id,
         check_in_date: today,
@@ -101,6 +119,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // 🔥 RETURN (FRONTEND UCHUN TO‘G‘RI FORMAT)
     return NextResponse.json({
       id: data.id,
       userId: data.user_id,
@@ -109,7 +128,7 @@ export async function POST(request: NextRequest) {
       checkOutTime: data.check_out_time,
       isLate: data.is_late,
       penalty: data.penalty,
-      checkInImage: data.check_in_image, // ✅
+      checkInImage: data.check_in_image,
       caption: data.caption,
     })
 

@@ -25,8 +25,12 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
 
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [isCameraReady, setIsCameraReady] = useState(false)
-  const [caption, setCaption] = useState('')
-
+  const [caption, setCaption] = useState(
+    new Date().toLocaleTimeString('uz-UZ', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  )
   // 🎥 CAMERA START
   useEffect(() => {
     if (!isOpen) return
@@ -50,6 +54,16 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
         alert('❌ Kamera uchun ruxsat berilmagan')
       }
     }
+    useEffect(() => {
+      if (isOpen) {
+        setCaption(
+          new Date().toLocaleTimeString('uz-UZ', {
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        )
+      }
+    }, [isOpen])
 
     startCamera()
 
@@ -102,8 +116,21 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
     return data.publicUrl
   }
   const handleCheckIn = async () => {
-    if (!capturedImage || !caption) {
-      alert("Rasm va izoh majburiy!")
+    if (!capturedImage) {
+      alert("❌ Rasm majburiy")
+      return
+    }
+
+    if (!caption) {
+      alert("❌ Izoh yozing")
+      return
+    }
+
+    // 🔥 VAQT FORMAT CHECK (masalan: 12:30)
+    const timeRegex = /^([01]?\d|2[0-3]):[0-5]\d$/
+
+    if (!timeRegex.test(caption)) {
+      alert("⏰ Vaqtni to‘g‘ri kiriting (masalan: 08:30)")
       return
     }
 
@@ -131,8 +158,11 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen}>
+      <DialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Camera className="w-5 h-5" />
@@ -164,11 +194,11 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
               </Button>
 
               <input
-                type="text"
-                placeholder="Izoh yozing..."
+                type="time"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 className="w-full border rounded-md p-2"
+                required
               />
             </>
           ) : (
@@ -183,11 +213,11 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
               </div>
 
               <input
-                type="text"
-                placeholder="Izoh yozing..."
+                type="time"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 className="w-full border rounded p-2"
+                required
               />
 
               {/* ACTIONS */}
@@ -202,17 +232,12 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
 
                 <Button
                   onClick={handleCheckIn}
-                  className="flex-1 bg-green-600"
+                  disabled={!capturedImage || !caption}
+                  className="flex-1 bg-green-600 disabled:opacity-50"
                 >
                   ✅ Ish boshladim
                 </Button>
 
-                <Button
-                  onClick={handleCheckOut}
-                  className="flex-1 bg-red-600"
-                >
-                  🛑 Ish tugatdim
-                </Button>
               </div>
             </>
           )}
