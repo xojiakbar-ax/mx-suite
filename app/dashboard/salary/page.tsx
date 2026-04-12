@@ -222,12 +222,26 @@ export default function SalaryPage() {
               <div className="grid grid-cols-3 gap-5">
 
                 {/* BONUS */}
-                <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-green-50 transition">
-                  <p className="text-xs text-gray-500 mb-1">Bonus</p>
+                {canEdit ? (
+                  <input
+                    type="number"
+                    value={editData[emp.id]?.bonuses ?? emp.bonuses ?? ''}
+                    onChange={(e) =>
+                      setEditData((prev: any) => ({
+                        ...prev,
+                        [emp.id]: {
+                          ...prev[emp.id],
+                          bonuses: Number(e.target.value)
+                        }
+                      }))
+                    }
+                    className="w-full text-xl font-semibold text-green-600 bg-transparent outline-none"
+                  />
+                ) : (
                   <p className="text-xl font-semibold text-green-600">
                     +{format(emp.bonuses)}
                   </p>
-                </div>
+                )}
 
                 {/* PENALTY */}
                 <div className="rounded-2xl border bg-gray-50 p-5 hover:bg-red-50 transition">
@@ -327,7 +341,9 @@ export default function SalaryPage() {
                       await supabase
                         .from('employees')
                         .update({
-                          name: data.name ?? emp.name
+                          name: data.name ?? emp.name,
+                          student_count: data.student_count ?? emp.student_count,
+                          bonuses: data.bonuses ?? emp.bonuses
                         })
                         .eq('id', emp.id)
 
