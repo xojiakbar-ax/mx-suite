@@ -387,11 +387,29 @@ export default function SalaryPage() {
               {canEdit && (
                 <div className="flex gap-3 pt-2">
 
-                  <button className="flex-1 bg-red-500 hover:bg-red-600 active:scale-95 
-                         transition text-white py-3 rounded-2xl font-medium shadow-sm">
-                    ⚠️ Jarima qo‘shish
-                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedEmp(emp)
 
+                      // 🔥 history load
+                      const empHistory = allPenalties.filter(
+                        p => p.employee_id === emp.id
+                      )
+                      setHistory(empHistory)
+
+                      // 🔥 form reset
+                      setPenaltyForm({ amount: 0, reason: '' })
+
+                      setPenaltyModal(true)
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 
+             bg-red-500 hover:bg-red-600 
+             active:scale-95 transition-all duration-200 
+             text-white py-3 rounded-2xl font-medium shadow-sm"
+                  >
+                    <AlertTriangle size={18} />
+                    Jarima qo‘shish
+                  </button>
                   <button
                     onClick={async () => {
                       const data = editData[emp.id]

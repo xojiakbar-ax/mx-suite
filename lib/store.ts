@@ -142,6 +142,7 @@ interface AppState {
   // Check-in
   todayCheckIn: CheckIn | null
   checkIn: (image?: string, caption?: string) => void
+  isCheckInLoaded: boolean   // 🔥 SHU QATORNI QO‘SH
   checkOut: () => void
   addPenalty: (amount: number) => void
   allCheckIns: { [key: string]: CheckIn }
@@ -392,6 +393,7 @@ export const useStore = create<AppState>()(
       // Check-in
       todayCheckIn: null,
       allCheckIns: {},
+      isCheckInLoaded: false,
 
       // 🔥 DELETE
       removeCheckIn: (id: string) => {
@@ -529,54 +531,45 @@ export const useStore = create<AppState>()(
       },
       // test
       restoreCheckInState: async () => {
-        const state = get()
-        const userId = state.user?.id
+        const supabase = createClient()
+        const { user } = get()
 
-        if (!userId) return
+        if (!user) return
 
-        try {
-          const res = await fetch('/api/checkin')
+        // 🔥 BUGUNGI SANA (TOSHKENT)
+        const today = new Date().toISOString().split('T')[0]
 
-          if (!res.ok) return
+        const { data, error } = await supabase
+          .from('check_ins')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('check_in_date', today)
+          .maybeSingle()
 
-          const data = await res.json()
-
-          const today = new Date().toISOString().split('T')[0]
-
-          const todayCheck = data.find(
-            (item: any) =>
-              item.date === today
-          )
-
-          if (todayCheck) {
-            const checkInRecord = {
-              userId: userId,
-              userName: state.user?.name || '', // 🔥 SHU MUHIM
-              date: todayCheck.date,
-              checkInTime: todayCheck.checkInTime,
-              checkOutTime: todayCheck.checkOutTime,
-              isLate: todayCheck.isLate,
-              penalty: todayCheck.penalty,
-              checkInImage: todayCheck.check_in_image,
-              caption: todayCheck.caption,
-            }
-
-            const id = Date.now().toString()
-
-            set({
-              todayCheckIn: checkInRecord,
-              allCheckIns: {
-                ...state.allCheckIns,
-                [id]: checkInRecord
-              }
-            })
-          } else {
-            set({ todayCheckIn: null })
-          }
-
-        } catch (err) {
-          console.error("RESTORE ERROR:", err)
+        if (error || !data) {
+          set({
+            todayCheckIn: null,
+            isCheckInLoaded: true // 🔥 SHU MUHIM
+          })
+          return
         }
+
+        const checkInRecord = {
+          userId: data.user_id,
+          userName: user.name,
+          date: data.check_in_date,
+          checkInTime: data.check_in_time,
+          checkOutTime: data.check_out_time,
+          isLate: data.is_late,
+          penalty: data.penalty,
+          checkInImage: data.check_in_image,
+          caption: data.caption,
+        }
+
+        set({
+          todayCheckIn: checkInRecord,
+          isCheckInLoaded: true // 🔥 SHU MUHIM
+        })
       },
 
       // Tasks

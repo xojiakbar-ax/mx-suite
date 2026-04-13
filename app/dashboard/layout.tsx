@@ -22,7 +22,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
-  const { todayCheckIn, user: storeUser, isHydrated } = useStore()
+  const { todayCheckIn, user: storeUser, isHydrated, isCheckInLoaded } = useStore()
+  const { restoreCheckInState } = useStore()
   useEffect(() => {
     setMounted(true) // 🔥 SSR → CSR fix
 
@@ -47,14 +48,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     init()
   }, [supabase, router])
   useEffect(() => {
+    if (storeUser) {
+      restoreCheckInState()
+    }
+  }, [storeUser])
+  useEffect(() => {
     if (
       storeUser &&
       storeUser.role !== 'director' &&
+      isCheckInLoaded && // 🔥 ENG MUHIM
       !todayCheckIn
     ) {
       setCheckInOpen(true)
     }
-  }, [storeUser, todayCheckIn])
+  }, [storeUser, todayCheckIn, isCheckInLoaded])
   // 🔥 hydration fix
   if (!mounted) return null
 
