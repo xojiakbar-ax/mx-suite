@@ -1,19 +1,22 @@
 'use client'
 
 import { useStore } from '@/lib/store'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Trash2, Calendar, Clock } from 'lucide-react'
 
 export default function AttendancePage() {
-    const { allCheckIns, user, removeCheckIn } = useStore()
+    const { allCheckIns, user, removeCheckIn, fetchCheckIns } = useStore()
 
     const [filter, setFilter] = useState<'today' | 'week' | 'month' | 'all'>('today')
 
     const now = new Date()
-
+    useEffect(() => {
+        fetchCheckIns()
+    }, [])
     const checkIns = Object.entries(allCheckIns)
 
     const filtered = checkIns.filter(([_, item]) => {
+
         const itemDate = new Date(item.dateFull || item.date)
 
         if (filter === 'today') {

@@ -148,6 +148,7 @@ interface AppState {
   allCheckIns: { [key: string]: CheckIn }
   getCheckInHistory: (userId: string, limit?: number) => CheckIn[]
   restoreCheckInState: () => void
+  fetchCheckIns: () => Promise<void>
 
   // Tasks
   tasks: Task[]
@@ -571,7 +572,34 @@ export const useStore = create<AppState>()(
           isCheckInLoaded: true // 🔥 SHU MUHIM
         })
       },
+      fetchCheckIns: async () => {
+        const supabase = createClient()
 
+        const { data } = await supabase
+          .from('check_ins')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (!data) return
+
+        const mapped: any = {}
+
+        data.forEach((item: any) => {
+          mapped[item.id] = {
+            userId: item.user_id,
+            userName: item.user_name,
+            date: item.check_in_date,
+            checkInTime: item.check_in_time,
+            checkOutTime: item.check_out_time,
+            isLate: item.is_late,
+            penalty: item.penalty || 0,
+            checkInImage: item.check_in_image,
+            caption: item.caption,
+          }
+        })
+
+        set({ allCheckIns: mapped })
+      },
       // Tasks
       tasks: [],
       addTask: (task) => {
