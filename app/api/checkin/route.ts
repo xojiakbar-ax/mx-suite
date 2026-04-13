@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
       .from('check_ins')
       .insert({
         user_id: user.id,
+        user_name: user.user_metadata?.name || 'User', // 🔥 SHUNI QO‘SH
         check_in_date: today,
         check_in_time: checkInTime,
         check_out_time: null,
