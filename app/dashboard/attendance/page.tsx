@@ -10,6 +10,8 @@ export default function AttendancePage() {
     const [filter, setFilter] = useState<'today' | 'week' | 'month' | 'all'>('today')
 
     const now = new Date()
+
+
     useEffect(() => {
         if (user) {
             fetchCheckIns()

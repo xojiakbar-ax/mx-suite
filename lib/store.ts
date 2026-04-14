@@ -575,15 +575,8 @@ export const useStore = create<AppState>()(
 
         const { data } = await supabase
           .from('check_ins')
-          .select(`
-  *,
-  profiles (
-    name,
-    role,
-    email
-  )
-`)
-          .order('created_at', { ascending: false })
+          .select('*')
+          .order('check_in_time', { ascending: false })
         console.log("CHECKINS:", data)
         if (!data) return
 
