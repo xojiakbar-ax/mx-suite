@@ -40,24 +40,31 @@ export default function SalaryPage() {
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return setLoading(false)
 
-    // 🔥 parallel fetch
+    if (!user) {
+      setSettings({})
+      setLoading(false)
+      return
+    }
+
+    // 1. settings + me
     const [meRes, settingsRes] = await Promise.all([
       supabase.from('employees').select('*').eq('profile_id', user.id).maybeSingle(),
       supabase.from('settings').select('*').maybeSingle()
     ])
-    const { data: penaltiesData } = await supabase
-      .from('penalties')
-      .select('*')
+
     const me = meRes.data
     const set = settingsRes.data
-    setAllPenalties(penaltiesData || [])
-    if (!me) return setLoading(false)
+
+    if (!me) {
+      setLoading(false)
+      return
+    }
 
     setRole(me.role)
     setSettings(set)
 
+    // 2. employees
     let query = supabase.from('employees').select('*')
 
     if (!(me.role === 'director' || me.role === 'cto')) {
@@ -67,6 +74,17 @@ export default function SalaryPage() {
     const { data } = await query
 
     setEmployees(data || [])
+
+    // 3. 🔥 penalties (ENG OXIRIDA)
+    const ids = (data || []).map(e => e.id)
+
+    const { data: penaltiesData } = await supabase
+      .from('penalties')
+      .select('*')
+      .in('employee_id', ids)
+
+    setAllPenalties(penaltiesData || [])
+
     setLoading(false)
   }
 
@@ -74,7 +92,7 @@ export default function SalaryPage() {
     load()
   }, [])
 
-  if (loading || !settings) return <div className="p-6">Loading...</div>
+  if (loading) return <div className="p-6">Loading...</div>
 
   const canEdit = role === 'director' || role === 'cto'
 
@@ -477,10 +495,13 @@ export default function SalaryPage() {
                 onClick={async () => {
                   if (!form.name || !form.role) return
 
+                  const { data: { user } } = await supabase.auth.getUser()
+                  if (!user) return // 🔥 SHU QATORNI QO‘SH
+
                   await supabase.from('employees').insert({
                     name: form.name,
                     role: form.role,
-                    profile_id: null,
+                    profile_id: user.id, // 🔥 SHU MUHIM
                     student_count: 0,
                     bonuses: 0,
                     penalties: 0
