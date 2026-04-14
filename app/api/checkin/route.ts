@@ -26,10 +26,16 @@ export async function GET(request: NextRequest) {
     }
 
     const formatted = data.map((item) => ({
-      ...item,
+      id: item.id,
+      userId: item.user_id,
+      userName: item.user_name || 'No name', // 🔥 SHU MUHIM
       date: item.check_in_date,
       checkInTime: item.check_in_time,
+      checkOutTime: item.check_out_time,
       isLate: item.is_late,
+      penalty: item.penalty,
+      checkInImage: item.check_in_image,
+      caption: item.caption,
     }))
 
     return NextResponse.json(formatted)
@@ -124,6 +130,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       id: data.id,
       userId: data.user_id,
+      userName: data.user_name, // 🔥 SHUNI QO‘SH
       date: data.check_in_date,
       checkInTime: data.check_in_time,
       checkOutTime: data.check_out_time,

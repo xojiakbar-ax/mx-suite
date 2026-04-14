@@ -26,6 +26,8 @@ export interface CheckIn {
   checkInImage: string
   caption?: string      // 🔥 YANGI
   dateFull?: string
+  email?: string      // 🔥 QO‘SH
+  role?: string
 }
 
 export interface Task {
@@ -577,7 +579,14 @@ export const useStore = create<AppState>()(
 
         const { data } = await supabase
           .from('check_ins')
-          .select('*')
+          .select(`
+  *,
+  profiles (
+    name,
+    role,
+    email
+  )
+`)
           .order('created_at', { ascending: false })
 
         if (!data) return
@@ -587,7 +596,7 @@ export const useStore = create<AppState>()(
         data.forEach((item: any) => {
           mapped[item.id] = {
             userId: item.user_id,
-            userName: item.user_name,
+            userName: item.profiles?.name,
             date: item.check_in_date,
             checkInTime: item.check_in_time,
             checkOutTime: item.check_out_time,

@@ -105,7 +105,7 @@ export default function AttendancePage() {
 
                                 {/* USER */}
                                 <h3 className="font-semibold text-lg">
-                                    👤 {item.userName || 'User'}
+                                    👤 {item.userName || item.email || 'No name'}
                                 </h3>
 
                                 {/* TIME */}
