@@ -457,13 +457,9 @@ export const useStore = create<AppState>()(
           const id = Date.now().toString()
 
           set({
-            todayCheckIn: checkInRecord,
-            allCheckIns: {
-              ...state.allCheckIns,
-              [id]: checkInRecord
-            }
+            todayCheckIn: checkInRecord
           })
-
+          await get().fetchCheckIns()
           localStorage.setItem(
             `educenter-checkin-${state.user?.id}`,
             JSON.stringify(checkInRecord)
@@ -517,12 +513,7 @@ export const useStore = create<AppState>()(
             penalty: state.todayCheckIn.penalty + amount,
           }
           set({
-            todayCheckIn: updatedCheckIn,
-
-            allCheckIns: {
-              ...state.allCheckIns,
-              [id]: updatedCheckIn
-            }
+            todayCheckIn: updatedCheckIn
           })
         }
       },
