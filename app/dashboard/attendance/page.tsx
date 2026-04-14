@@ -14,11 +14,7 @@ export default function AttendancePage() {
     const now = new Date()
 
 
-    useEffect(() => {
-        if (user) {
-            fetchCheckIns()
-        }
-    }, [user])
+
     const checkIns = Object.entries(allCheckIns)
 
     const filtered = checkIns.filter(([_, item]) => {

@@ -585,7 +585,7 @@ export const useStore = create<AppState>()(
         data.forEach((item: any) => {
           mapped[item.id] = {
             userId: item.user_id,
-            userName: item.user_name || item.profiles?.name || 'No name',
+            userName: item.user_name || 'No name',
             date: item.check_in_date,
             checkInTime: item.check_in_time,
             checkOutTime: item.check_out_time,
@@ -938,10 +938,7 @@ export const useStore = create<AppState>()(
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated()
-
-        // 🔥 ENG MUHIM
-        state?.fetchCheckIns()
-      },
+      }
     }
   )
 )
