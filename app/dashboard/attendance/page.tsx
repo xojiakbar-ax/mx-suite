@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react'
 import { Trash2, Calendar, Clock } from 'lucide-react'
 
 export default function AttendancePage() {
-    const { allCheckIns, user, removeCheckIn, fetchCheckIns } = useStore()
-
+    const allCheckIns = useStore(state => state.allCheckIns)
+    const user = useStore(state => state.user)
+    const fetchCheckIns = useStore(state => state.fetchCheckIns)
+    const removeCheckIn = useStore(state => state.removeCheckIn)
     const [filter, setFilter] = useState<'today' | 'week' | 'month' | 'all'>('today')
 
     const now = new Date()
