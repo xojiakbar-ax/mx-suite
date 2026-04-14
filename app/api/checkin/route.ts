@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// 📥 GET (o'z check-inlari)
+// 📥 GET (HAMMA check-inlar — GLOBAL)
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -15,11 +15,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('check_ins') // ✅ FIX
+      .from('check_ins')
       .select('*')
-      .eq('user_id', user.id)
       .order('check_in_time', { ascending: false })
-      .limit(30)
+      .limit(100)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -28,7 +27,7 @@ export async function GET(request: NextRequest) {
     const formatted = data.map((item) => ({
       id: item.id,
       userId: item.user_id,
-      userName: item.user_name || 'No name', // 🔥 SHU MUHIM
+      userName: item.user_name || 'No name',
       date: item.check_in_date,
       checkInTime: item.check_in_time,
       checkOutTime: item.check_out_time,
@@ -61,10 +60,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { check_in_image, caption } = body
 
-    // 🔥 SERVER TIME (XAVFSIZ)
     const now = new Date()
 
-    // 🔥 TOSHKENT TIME (DISPLAY)
     const checkInTime = new Intl.DateTimeFormat('uz-UZ', {
       hour: '2-digit',
       minute: '2-digit',
@@ -72,12 +69,10 @@ export async function POST(request: NextRequest) {
       timeZone: 'Asia/Tashkent',
     }).format(now)
 
-    // 🔥 ISO DATE (BUGUN)
     const today = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Tashkent',
     }).format(now)
 
-    // 🔒 1 MARTA CHECK
     const { data: existing } = await supabase
       .from('check_ins')
       .select('id')
@@ -92,7 +87,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 🔥 KECHIKISH (TOSHKENT TIME BO‘YICHA)
     const parts = new Intl.DateTimeFormat('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
@@ -105,12 +99,17 @@ export async function POST(request: NextRequest) {
 
     const is_late = hours > 8 || (hours === 8 && minutes > 0)
 
-    // 🔥 INSERT
+    // 🔥 USER NAME FIX (ENG MUHIM)
+    const userName =
+      user.user_metadata?.name ||
+      user.email ||
+      'User'
+
     const { data, error } = await supabase
       .from('check_ins')
       .insert({
         user_id: user.id,
-        user_name: user.user_metadata?.name || 'User', // 🔥 SHUNI QO‘SH
+        user_name: userName, // ✅ FIX
         check_in_date: today,
         check_in_time: checkInTime,
         check_out_time: null,
@@ -126,11 +125,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // 🔥 RETURN (FRONTEND UCHUN TO‘G‘RI FORMAT)
     return NextResponse.json({
       id: data.id,
       userId: data.user_id,
-      userName: data.user_name, // 🔥 SHUNI QO‘SH
+      userName: data.user_name, // ✅ FIX
       date: data.check_in_date,
       checkInTime: data.check_in_time,
       checkOutTime: data.check_out_time,
