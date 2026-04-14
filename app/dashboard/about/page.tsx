@@ -53,7 +53,7 @@ export default function AboutPage() {
         {
             name: "Xojiakbar Abdurahimov",
             role: "CTO / Creator",
-            image: "/creator.jpg",
+            image: "/public/creator.jpg",
         }
     ]
 
