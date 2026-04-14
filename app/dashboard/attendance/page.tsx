@@ -22,7 +22,9 @@ export default function AttendancePage() {
         const itemDate = new Date(item.dateFull || item.date)
 
         if (filter === 'today') {
-            return itemDate.toDateString() === now.toDateString()
+            const itemDateUzb = itemDate.toLocaleDateString('en-US', { timeZone: "Asia/Tashkent" })
+            const nowDateUzb = now.toLocaleDateString('en-US', { timeZone: "Asia/Tashkent" })
+            return itemDateUzb === nowDateUzb
         }
 
         if (filter === 'week') {

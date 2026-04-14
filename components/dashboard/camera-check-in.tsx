@@ -25,12 +25,19 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
 
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [isCameraReady, setIsCameraReady] = useState(false)
+
+  // ⏰ Uzbekistan time
   const getTime = () => {
-    const now = new Date()
-    return now.toISOString().slice(11, 16) // 🔥 ENG TO‘G‘RI
+    return new Date().toLocaleTimeString('en-GB', {
+      timeZone: 'Asia/Tashkent',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
   }
 
   const [caption, setCaption] = useState(getTime())
+
   // 🎥 CAMERA START
   useEffect(() => {
     if (!isOpen) return
@@ -81,6 +88,7 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
     const imageData = canvasRef.current.toDataURL('image/jpeg', 0.8)
     setCapturedImage(imageData)
   }
+
   const uploadImage = async (base64: string) => {
     const res = await fetch(base64)
     const blob = await res.blob()
@@ -107,6 +115,7 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
 
     return data.publicUrl
   }
+
   const handleCheckIn = async () => {
     if (!capturedImage) {
       alert("❌ Rasm majburiy")
@@ -118,11 +127,10 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
       return
     }
 
-    // 🔥 VAQT FORMAT CHECK (masalan: 12:30)
     const timeRegex = /^([01]?\d|2[0-3]):[0-5]\d$/
 
     if (!timeRegex.test(caption)) {
-      alert("⏰ Vaqtni to‘g‘ri kiriting (masalan: 08:30)")
+      alert("⏰ Vaqtni to‘g‘ri kiriting (08:30)")
       return
     }
 
@@ -139,9 +147,13 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
   }
 
   const resetAndClose = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+    }
+
     setCapturedImage(null)
     setIsCameraReady(false)
-    setCaption(new Date().toISOString().slice(11, 16))
+    setCaption(getTime())
     onClose()
   }
 
@@ -150,93 +162,106 @@ export function CameraCheckIn({ isOpen, onClose }: CameraCheckInProps) {
   }
 
   return (
-    <Dialog open={isOpen}>
-      <DialogContent
-        className="sm:max-w-md"
-        onInteractOutside={(e) => e.preventDefault()}
+    <>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) resetAndClose()
+        }}
       >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Camera className="w-5 h-5" />
-            {t('checkIn') || 'Check In / Out'}
-          </DialogTitle>
-        </DialogHeader>
+        <DialogContent
+          className="sm:max-w-md"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5" />
+              {t('checkIn') || 'Check In / Out'}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4">
-
-          {!capturedImage ? (
-            <>
-              {/* CAMERA */}
-              <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <Button
-                onClick={capturePhoto}
-                disabled={!isCameraReady}
-                className="w-full bg-primary"
-              >
-                📸 Rasm olish
-              </Button>
-
-              <input
-                type="time"
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                className="w-full border rounded-md p-2"
-                required
-              />
-            </>
-          ) : (
-            <>
-              {/* PREVIEW */}
-              <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
-                <img
-                  src={capturedImage}
-                  alt="Captured"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <input
-                type="time"
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                className="w-full border rounded p-2"
-                required
-              />
-
-              {/* ACTIONS */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleRetake}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Qayta olish
-                </Button>
+          <div className="space-y-4">
+            {!capturedImage ? (
+              <>
+                {/* CAMERA */}
+                <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
                 <Button
-                  onClick={handleCheckIn}
-                  disabled={!capturedImage || !caption}
-                  className="flex-1 bg-green-600 disabled:opacity-50"
+                  onClick={capturePhoto}
+                  disabled={!isCameraReady}
+                  className="w-full bg-primary"
                 >
-                  ✅ Ish boshladim
+                  📸 Rasm olish
                 </Button>
 
-              </div>
-            </>
-          )}
-        </div>
+                <input
+                  type="time"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  className="w-full border rounded-md p-2"
+                  required
+                />
+              </>
+            ) : (
+              <>
+                {/* PREVIEW */}
+                <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                  <img
+                    src={capturedImage}
+                    alt="Captured"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
 
-        <canvas ref={canvasRef} className="hidden" />
-      </DialogContent>
-    </Dialog>
+                <input
+                  type="time"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  className="w-full border rounded p-2"
+                  required
+                />
+
+                {/* ACTIONS */}
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleRetake}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Qayta olish
+                  </Button>
+
+                  <Button
+                    onClick={handleCheckOut}
+                    disabled={!capturedImage || !caption}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+                  >
+                    🛑 Ishni tugatish
+                  </Button>
+
+                  <Button
+                    onClick={handleCheckIn}
+                    disabled={!capturedImage || !caption}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                  >
+                    ✅ Ish boshladim
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+
+          <canvas ref={canvasRef} className="hidden" />
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
