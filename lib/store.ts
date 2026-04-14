@@ -932,9 +932,7 @@ export const useStore = create<AppState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         todayCheckIn: state.todayCheckIn,
-        allCheckIns: state.allCheckIns,
 
-        // 🔥 SHULARNI QO‘SH
         budgetRequests: state.budgetRequests,
         managerBudgets: state.managerBudgets,
       }),
