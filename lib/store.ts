@@ -584,7 +584,7 @@ export const useStore = create<AppState>()(
   )
 `)
           .order('created_at', { ascending: false })
-
+        console.log("CHECKINS:", data)
         if (!data) return
 
         const mapped: any = {}
@@ -937,7 +937,7 @@ export const useStore = create<AppState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         todayCheckIn: state.todayCheckIn,
-        allCheckIns: state.allCheckIns,
+        // allCheckIns: state.allCheckIns,
 
         // 🔥 SHULARNI QO‘SH
         budgetRequests: state.budgetRequests,
@@ -945,6 +945,9 @@ export const useStore = create<AppState>()(
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated()
+
+        // 🔥 ENG MUHIM
+        state?.fetchCheckIns()
       },
     }
   )
